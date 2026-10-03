@@ -1,0 +1,51 @@
+---
+import type { Link } from "../../lib/catalog";
+import { inlineCode, isExternalUrl, nodeDisplayName } from "../../lib/catalog";
+
+interface Props {
+  direction: "in" | "out";
+  links: Link[];
+}
+
+const { links, direction } = Astro.props;
+const arrow = direction === "in" ? "←" : "→";
+---
+
+<ul class="flow-links">
+  {links.map(({ edge, node, href }) => {
+    const otherId = direction === "in" ? edge.source : edge.target;
+    const name = nodeDisplayName(node, otherId);
+    return (
+      <li
+        class={
+          edge.kind === "outcome"
+            ? "flow-links__item flow-links__item--outcome"
+            : "flow-links__item"
+        }
+      >
+        <span class="flow-links__arrow">{arrow}</span>
+        {href ? (
+          isExternalUrl(href) ? (
+            <a href={href} rel="noreferrer" target="_blank">
+              {name} ↗
+            </a>
+          ) : (
+            <a href={href}>{name}</a>
+          )
+        ) : (
+          <strong>{name}</strong>
+        )}
+        <span
+          class="flow-links__why"
+          set:html={`— ${inlineCode(edge.reason)}`}
+        />
+        {edge.ux ? (
+          <span
+            class="flow-links__ux"
+            set:html={`UX: ${inlineCode(edge.ux)}`}
+          />
+        ) : null}
+      </li>
+    );
+  })}
+</ul>

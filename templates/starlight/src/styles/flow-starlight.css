@@ -1,0 +1,135 @@
+.flow-wip {
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: var(--sl-color-orange-low);
+  border: 1px solid var(--sl-color-orange);
+  border-radius: 0.5rem;
+}
+
+.flow-badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+.flow-badge--active {
+  color: var(--sl-color-green-high);
+  background: var(--sl-color-green-low);
+}
+
+.flow-badge--wip {
+  margin-left: 0.35rem;
+  color: var(--sl-color-orange-high);
+  background: var(--sl-color-orange-low);
+}
+
+.flow-badge--deprecated {
+  color: var(--sl-color-gray-2);
+  background: var(--sl-color-gray-5);
+}
+
+.flow-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--sl-color-gray-2);
+}
+
+.flow-lede {
+  font-size: 1.1rem;
+}
+
+.flow-links {
+  padding-left: 0;
+  list-style: none;
+}
+
+.flow-links__item {
+  margin-bottom: 0.4rem;
+}
+
+.flow-links__item--outcome {
+  color: var(--sl-color-red-high, #b91c1c);
+}
+
+.flow-links__arrow {
+  display: inline-block;
+  width: 1.25rem;
+  color: var(--sl-color-gray-3);
+}
+
+.flow-links__why {
+  margin-left: 0.25rem;
+}
+
+.flow-links__ux {
+  display: block;
+  margin-left: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--sl-color-gray-3);
+}
+
+.flow-refs {
+  font-size: 0.85rem;
+}
+
+.flow-screen-table__ref,
+.flow-api-table__ref {
+  font-size: 0.75rem;
+  color: var(--sl-color-gray-3);
+}
+
+.flow-branch {
+  margin-top: 2rem;
+}
+
+.flow-rule h4 {
+  margin-top: 0;
+  font-family: var(--sl-font-mono);
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: var(--sl-color-gray-3);
+}
+
+.flow-rule {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+}
+
+.flow-rule h3 {
+  margin-top: 0;
+  font-family: var(--sl-font-mono);
+  font-size: 0.9rem;
+}
+
+.flow-rules {
+  margin-top: 1rem;
+}
+
+/* React Flow inside Starlight content: full width of the content column */
+.sl-markdown-content .flow-graph-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 1.5rem 0;
+}
+
+/* Starlight limits the width of markdown children, which breaks node/edge positions in React Flow */
+.sl-markdown-content .flow-graph-wrap,
+.sl-markdown-content .flow-graph-wrap * {
+  max-width: none;
+}
+
+.flow-map-hint {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--sl-color-gray-2, #4b5563);
+}

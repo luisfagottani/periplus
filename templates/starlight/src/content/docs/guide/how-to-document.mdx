@@ -1,0 +1,108 @@
+---
+title: How to document a flow
+description: The flow root doc, colocated screen docs and the Periplus build/check cycle.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+Nothing here is inferred from the app's navigation: developers declare the screens, the rules and **why** each
+screen leads to the next one. The `periplus` CLI validates it, builds the graph and publishes these pages.
+
+## Where files live
+
+<FileTree>
+
+- flows/
+  - checkout/
+    - index.mdx — flow root (goal, entry, product summary)
+    - generated/ — manifest, types, AI context, Mermaid (committed, do not edit)
+- src/modules/checkout/screens/
+  - CartLoading/
+    - CartLoading.tsx
+    - **CartLoading.periplus.ts** — this screen's node (typed data)
+    - CartLoading.periplus.mdx — product-facing body (optional)
+  - addressForm/screens/ZipCodeScreen/
+    - **ZipCodeScreen.periplus.ts**
+
+</FileTree>
+
+- **One `.periplus.ts` per screen**, inside the screen folder, named after the folder. A multi-step form = one file per step.
+- Free-form product text goes in the sibling `.periplus.mdx` (markdown only, no frontmatter).
+- A node belongs to a flow through its `flowId` and by living inside the `moduleRoot` (or `include`) of the `index.mdx`.
+- The node ID is `Screen:branch`. A regular screen has a single `default` branch; only use more than one when the same folder plays different roles (e.g. a loading screen with `start` and `quoteFlow`).
+
+## Step by step
+
+```bash
+# 1. flow root
+npx periplus new checkout --id checkout \
+  --module-root src/modules/checkout --title "Checkout"
+
+# 2. keep it running while documenting (regenerates types and manifest on save)
+npx periplus dev
+
+# 3. in each screen folder (creates the .periplus.ts and the .periplus.mdx)
+npx periplus node checkout --path src/modules/checkout/screens/CartLoading
+
+# 4. (optional) candidates with file:line evidence; the AI suggests, you decide
+npx periplus suggest src/modules/checkout/screens/CartLoading
+
+# 5. after reviewing it against the code
+npx periplus stamp src/modules/checkout/screens/CartLoading
+
+# 6. before opening the PR
+npx periplus check
+```
+
+## What to write for each screen
+
+The `.periplus.ts` is an object typed by the flow: your editor completes the fields and the valid screens in `to`/`from`.
+
+```ts
+import type { ScreenDoc } from '../../../../flows/checkout/generated/+flow.types';
+
+export default {
+  flowId: 'checkout',
+  branches: [
+    {
+      branchId: 'default',
+      label: 'Cart',
+      summary: 'Shows the items before payment.',
+      incoming: [{ from: 'flow:entry', reason: 'tapped "Checkout"' }],
+      outgoing: [{ to: 'AddressScreen', reason: 'cart is valid' }],
+    },
+  ],
+} satisfies ScreenDoc;
+```
+
+Only `import type` is allowed: the doc is pure data (no functions or runtime imports).
+
+| Field | Purpose |
+| --- | --- |
+| `type` | `screen` (default), `loading`, `error`, `empty`, `modal` or `decision` |
+| `summary` | One sentence about what the screen does |
+| `incoming[]` (`from`, `reason`) | Where the user comes from and under which condition |
+| `outgoing[]` (`to`, `reason`, `ux`) | Where they go and why; every branch is an exit with its own `reason` |
+| `outgoing[].outcome: error \| end` | Exit without a screen (toast + go back, end of flow). The map draws a terminal node |
+| `final: true` | The journey ends here (success, rejection), even if closing the screen leads to another flow |
+| `rules[]` | Business rule: `summary`, `when`, `then`, `where` (file/symbol), `verify` (test) |
+| `apis[]` | `endpoint` ("GET /path"), `when`, `effect` (`read` / `write`) |
+| `notes[]` | Short notes shown on the page and in the map |
+| `.periplus.mdx` | Free-form product text: what the user sees, situations (success, error, empty) |
+
+Doc keys and enums are in English; the texts (`label`, `summary`, `reason`, rules and body) can be in your team's language.
+
+Valid references in `to`/`from`: `Screen` (= `Screen:default`), `Screen:branch`, `flow:entry`, `flow:<other_flow>`.
+Declare each link **on both sides** (exit at the source, entry at the target); `check` warns when one is missing.
+
+A new screen only shows up in autocomplete after the types are regenerated: keep `npx periplus dev` running while documenting.
+
+## Drift
+
+`stamp` writes `codeFingerprint` (hash of the screen folder files + `codePaths`) and `lastReviewed` into the `.periplus.ts` without touching the rest of the file. When the code changes,
+`check` marks the doc as stale until someone reviews it and runs `stamp` again.
+
+## Pull requests
+
+In CI, run `periplus check --fail-on error` and `periplus build --check`: the job fails on errors or when
+`flows/**/generated/` is out of date. With `--format markdown` the report can be posted as a PR comment.

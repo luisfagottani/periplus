@@ -1,0 +1,45 @@
+---
+import type { ManifestNode } from "../../lib/catalog";
+import { inlineCode, repoFileUrl } from "../../lib/catalog";
+
+interface Props {
+  apis: Array<ManifestNode["apis"][number] & { usedBy?: string[] }>;
+}
+
+const { apis } = Astro.props;
+---
+
+<table class="flow-api-table">
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Effect</th>
+      <th>When</th>
+    </tr>
+  </thead>
+  <tbody>
+    {apis.map((api) => (
+      <tr>
+        <td>
+          <code>{api.endpoint}</code>
+          {api.where.map((ref) => (
+            <div class="flow-api-table__ref">
+              <a href={repoFileUrl(ref.file)} rel="noreferrer" target="_blank">
+                {ref.symbol ?? ref.file.split("/").pop()}
+              </a>
+            </div>
+          ))}
+        </td>
+        <td>{api.effect === "write" ? "writes" : "reads"}</td>
+        <td>
+          <span set:html={inlineCode(api.when)} />
+          {api.usedBy?.length ? (
+            <div class="flow-api-table__ref">
+              used by: {api.usedBy.join(", ")}
+            </div>
+          ) : null}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>

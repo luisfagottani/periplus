@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+*.tgz
+.DS_Store
+templates/starlight/node_modules
+templates/starlight/.astro
+templates/starlight/dist

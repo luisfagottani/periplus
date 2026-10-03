@@ -1,0 +1,24 @@
+---
+title: Product journeys
+description: Screens, business rules and links of every flow, documented next to the code.
+template: splash
+hero:
+  tagline: Every screen with its rules and the reason behind each path, written by the people who build it, for product and engineering.
+  actions:
+    - text: Overview map
+      link: /overview/
+      icon: right-arrow
+    - text: How to document
+      link: /guide/how-to-document/
+      icon: document
+      variant: minimal
+---
+
+## How it works
+
+- Each flow has a root page (`flows/<flow>/index.mdx`) with its goal, entry and product summary.
+- Each screen has a `.periplus.ts` **next to its code** (typed by the flow) with rules, APIs and links to neighboring screens.
+- `periplus build` merges everything into a graph; these pages and the interactive maps are generated from it.
+- CI warns when a screen's code changes and its doc has not been reviewed.
+
+Edit this page freely: it belongs to your project, not to the theme.

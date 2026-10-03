@@ -1,0 +1,79 @@
+name: alpha snapshot
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or SHA to publish as a snapshot
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-${{ github.event.pull_request.number || inputs.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    name: publish snapshot
+    # Only for branches of this repository (never forks) and only when the label is applied.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.label.name == 'release:alpha' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    # Requires a manual approval from the repository owner.
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || inputs.ref }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+
+      - name: Require at least one changeset
+        run: |
+          if ! find .changeset -name '*.md' ! -name 'README.md' | grep -q .; then
+            echo "::error title=No changeset::A snapshot needs at least one changeset. Run \`pnpm changeset\` and push it."
+            exit 1
+          fi
+
+      - run: pnpm changeset version --snapshot alpha
+      - run: pnpm build
+      - run: pnpm changeset publish --tag alpha --no-git-tag
+        env:
+          # Remove once Trusted Publishing (OIDC) is configured on npmjs.com.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Report the published version
+        id: published
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Published \`periplus@$version\` (dist-tag \`alpha\`)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.published.outputs.version }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body "Snapshot published: \`periplus@$VERSION\`
+
+          \`\`\`bash
+          pnpm add -D periplus@$VERSION
+          \`\`\`"

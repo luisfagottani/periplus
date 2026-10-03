@@ -1,0 +1,243 @@
+---
+import {
+  domainLabel,
+  externalFlowHref,
+  inlineCode,
+  isExternalUrl,
+  linksOf,
+  loadCatalog,
+  loadManifest,
+  type ManifestNode,
+  repoFileUrl,
+  repoUrl,
+  STATUS_LABELS,
+  screenHref,
+  toGraphPayload,
+} from "../../lib/catalog";
+import { NODE_CATEGORY_LABELS, nodeCategory } from "../../lib/nodeCategory";
+import ApiList from "./ApiList.astro";
+import FlowGraph from "./FlowGraph";
+import LinkList from "./LinkList.astro";
+
+interface Props {
+  flowId: string;
+}
+
+const { flowId } = Astro.props;
+const manifest = loadManifest(flowId);
+const { flow } = manifest;
+const catalog = loadCatalog();
+
+const graphJson = JSON.stringify(toGraphPayload(manifest));
+const entryLinks = linksOf(manifest, "flow:entry").outgoing;
+
+const screens = manifest.screens.map((screen) => {
+  const nodes = manifest.nodes.filter((node) =>
+    screen.nodeIds.includes(node.id)
+  );
+  return {
+    ...screen,
+    category:
+      NODE_CATEGORY_LABELS[nodeCategory({ kind: "screen", type: screen.type })],
+    href: screenHref(flow, screen.pageSlug),
+    roles: nodes.length > 1 ? nodes.map((node) => node.label) : [],
+    rules: nodes.reduce((total, node) => total + node.rules.length, 0),
+    summary: nodes
+      .map((node) => node.summary)
+      .filter(Boolean)
+      .join(" / "),
+    wip: nodes.some((node) => node.wip),
+  };
+});
+
+const apisByEndpoint = new Map<
+  string,
+  ManifestNode["apis"][number] & { usedBy: string[] }
+>();
+for (const node of manifest.nodes) {
+  for (const api of node.apis) {
+    const existing = apisByEndpoint.get(api.endpoint);
+    if (existing) {
+      existing.usedBy.push(node.label);
+    } else {
+      apisByEndpoint.set(api.endpoint, { ...api, usedBy: [node.label] });
+    }
+  }
+}
+const apis = [...apisByEndpoint.values()];
+
+const titleOf = (id: string) =>
+  catalog.flows.find((f) => f.flowId === id)?.title ??
+  catalog.externalFlows.find((f) => f.flowId === id)?.title ??
+  id;
+const hrefOf = externalFlowHref;
+const targetOf = (id: string) =>
+  isExternalUrl(hrefOf(id)) ? "_blank" : undefined;
+const outgoingFlows = catalog.crossLinks.filter((link) => link.from === flowId);
+const incomingFlows = catalog.crossLinks.filter((link) => link.to === flowId);
+const contextPath = `${manifest.flow.indexPath.replace(/index\.mdx$/, "")}generated/flow.context.md`;
+---
+
+<p class="flow-meta">
+  <span class={`flow-badge flow-badge--${flow.status}`}
+    >{STATUS_LABELS[flow.status]}</span
+  >
+  <span>{domainLabel(flow.domain)}</span>
+  <code>{flow.flowId}</code>
+  {flow.lastReviewed ? <span>reviewed {flow.lastReviewed}</span> : null}
+</p>
+
+{flow.entry.productSummary ? (
+  <p class="flow-lede" set:html={inlineCode(flow.entry.productSummary)} />
+) : null}
+
+<h2>Entry</h2>
+
+<p set:html={inlineCode(flow.entry.summary)} />
+
+{entryLinks.length ? <LinkList direction="out" links={entryLinks} /> : null}
+
+{flow.entry.triggers.length ? (
+  <ul class="flow-refs">
+    {flow.entry.triggers.map((ref) => (
+      <li>
+        <a href={repoFileUrl(ref.file)} rel="noreferrer" target="_blank">
+          {ref.symbol ? `${ref.symbol} · ` : ""}
+          {ref.file}
+        </a>
+      </li>
+    ))}
+  </ul>
+) : null}
+
+<slot />
+
+<h2>Flow map</h2>
+
+<p class="flow-map-hint">
+  Click a node to see rules, APIs and links, or an arrow to see why.
+  Double-click opens the screen page.
+  <strong>Expand map</strong>
+  opens it fullscreen (<kbd>Esc</kbd>
+  closes).
+</p>
+
+<FlowGraph graphJson={graphJson} repoUrl={repoUrl()} client:only="react" />
+
+<h2>Screens ({screens.length})</h2>
+
+<table class="flow-screen-table">
+  <thead>
+    <tr>
+      <th>Screen</th>
+      <th>Type</th>
+      <th>What it does</th>
+      <th>Rules</th>
+    </tr>
+  </thead>
+  <tbody>
+    {screens.map((screen) => (
+      <tr>
+        <td>
+          <a href={screen.href}>{screen.title}</a>
+          {screen.wip ? (
+            <span class="flow-badge flow-badge--wip">wip</span>
+          ) : null}
+          <div class="flow-screen-table__ref">
+            <code>{screen.screenRef}</code>
+          </div>
+        </td>
+        <td>{screen.category}</td>
+        <td>
+          <span set:html={inlineCode(screen.summary)} />
+          {screen.roles.length ? (
+            <div class="flow-screen-table__ref">
+              roles: {screen.roles.join(" · ")}
+            </div>
+          ) : null}
+        </td>
+        <td>{screen.rules}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{apis.length ? (
+  <>
+    <h2>Flow APIs ({apis.length})</h2>
+    <ApiList apis={apis} />
+  </>
+) : null}
+
+{outgoingFlows.length || incomingFlows.length ? (
+  <>
+    <h2>Connected flows</h2>
+    <ul class="flow-links">
+      {incomingFlows.map((link) => (
+        <li class="flow-links__item">
+          <span class="flow-links__arrow">←</span>
+          {hrefOf(link.from) ? (
+            <a href={hrefOf(link.from)} target={targetOf(link.from)}>
+              {titleOf(link.from)}
+            </a>
+          ) : (
+            <strong>{titleOf(link.from)}</strong>
+          )}
+          <span class="flow-links__why">— {link.reasons.join(" · ")}</span>
+        </li>
+      ))}
+      {outgoingFlows.map((link) => (
+        <li class="flow-links__item">
+          <span class="flow-links__arrow">→</span>
+          {hrefOf(link.to) ? (
+            <a href={hrefOf(link.to)} target={targetOf(link.to)}>
+              {titleOf(link.to)}
+            </a>
+          ) : (
+            <strong>{titleOf(link.to)}</strong>
+          )}
+          <span class="flow-links__why">— {link.reasons.join(" · ")}</span>
+        </li>
+      ))}
+    </ul>
+  </>
+) : null}
+
+<h2>For developers</h2>
+
+<ul class="flow-refs">
+  <li>
+    Code:
+    <a href={repoFileUrl(flow.moduleRoot)} rel="noreferrer" target="_blank"
+      ><code>{flow.moduleRoot}</code></a
+    >
+    {flow.include.map((dir) => (
+      <span>
+        , <code>{dir}</code>
+      </span>
+    ))}
+  </li>
+  <li>
+    Root doc:
+    <a href={repoFileUrl(flow.indexPath)} rel="noreferrer" target="_blank"
+      ><code>{flow.indexPath}</code></a
+    >
+  </li>
+  <li>
+    AI context:
+    <a href={repoFileUrl(contextPath)} rel="noreferrer" target="_blank"
+      ><code>{contextPath}</code></a
+    >
+  </li>
+  {flow.watchPaths.length ? (
+    <li>
+      watchPaths:{" "}
+      {flow.watchPaths.map((glob, index) => (
+        <span>
+          {index ? ", " : ""}
+          <code>{glob}</code>
+        </span>
+      ))}
+    </li>
+  ) : null}
+</ul>

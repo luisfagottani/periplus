@@ -1,0 +1,5 @@
+node_modules
+dist
+.astro
+# gerado por `periplus build` a partir dos *.periplus.ts / *.periplus.mdx
+src/content/docs/flows/

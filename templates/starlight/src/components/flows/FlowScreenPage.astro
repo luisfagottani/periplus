@@ -1,0 +1,148 @@
+---
+import {
+  branchAnchor,
+  flowHref,
+  inlineCode,
+  linksOf,
+  loadManifest,
+  repoFileUrl,
+} from "../../lib/catalog";
+import { NODE_CATEGORY_LABELS, nodeCategory } from "../../lib/nodeCategory";
+import ApiList from "./ApiList.astro";
+import LinkList from "./LinkList.astro";
+import RuleList from "./RuleList.astro";
+
+interface Props {
+  flowId: string;
+  screenRef: string;
+}
+
+const { flowId, screenRef } = Astro.props;
+const manifest = loadManifest(flowId);
+const screen = manifest.screens.find((s) => s.screenRef === screenRef);
+if (!screen) {
+  throw new Error(`Screen ${screenRef} is not in the ${flowId} manifest`);
+}
+
+const branches = manifest.nodes
+  .filter((node) => screen.nodeIds.includes(node.id))
+  .map((node) => ({ node, ...linksOf(manifest, node.id) }));
+const multiRole = branches.length > 1;
+---
+
+<p class="flow-meta">
+  <span
+    >{NODE_CATEGORY_LABELS[
+      nodeCategory({ kind: "screen", type: screen.type })
+    ]}</span
+  >
+  <code>{screen.screenRef}</code>
+  {screen.lastReviewed ? (
+    <span>reviewed {screen.lastReviewed}</span>
+  ) : (
+    <span>never reviewed</span>
+  )}
+  <a href={flowHref(manifest.flow)}>← {manifest.flow.title}</a>
+</p>
+
+{multiRole ? (
+  <p class="flow-map-hint">
+    This screen has {branches.length} roles in the flow:{" "}
+    {branches.map(({ node }, index) => (
+      <span>
+        {index ? " · " : ""}
+        <a href={`#${branchAnchor(node.branchId ?? "default")}`}>
+          {node.label}
+        </a>
+      </span>
+    ))}
+  </p>
+) : null}
+
+<slot />
+
+{branches.map(({ node, incoming, outgoing }) => (
+  <section class="flow-branch" id={branchAnchor(node.branchId ?? "default")}>
+    {multiRole ? (
+      <h2>
+        {node.label}{" "}
+        {node.wip ? <span class="flow-badge flow-badge--wip">wip</span> : null}
+      </h2>
+    ) : null}
+    {node.summary ? <p set:html={inlineCode(node.summary)} /> : null}
+    {!multiRole && node.wip ? (
+      <p class="flow-wip">
+        Work in progress: part of this behavior is not ready yet.
+      </p>
+    ) : null}
+
+    {multiRole ? <h3>Comes from</h3> : <h2>Comes from</h2>}
+    {incoming.length ? (
+      <LinkList direction="in" links={incoming} />
+    ) : (
+      <p class="muted">No documented incoming links.</p>
+    )}
+
+    {multiRole ? <h3>Goes to</h3> : <h2>Goes to</h2>}
+    {outgoing.length ? (
+      <LinkList direction="out" links={outgoing} />
+    ) : (
+      <p class="muted">No documented outgoing links.</p>
+    )}
+
+    {node.rules.length ? (
+      <>
+        {multiRole ? (
+          <h3>Rules ({node.rules.length})</h3>
+        ) : (
+          <h2>Rules ({node.rules.length})</h2>
+        )}
+        <RuleList rules={node.rules} />
+      </>
+    ) : null}
+
+    {node.apis.length ? (
+      <>
+        {multiRole ? <h3>APIs</h3> : <h2>APIs</h2>}
+        <ApiList apis={node.apis} />
+      </>
+    ) : null}
+
+    {node.notes.length ? (
+      <>
+        {multiRole ? <h3>Notes</h3> : <h2>Notes</h2>}
+        <ul>
+          {node.notes.map((note) => (
+            <li set:html={inlineCode(note)} />
+          ))}
+        </ul>
+      </>
+    ) : null}
+  </section>
+))}
+
+<h2>For developers</h2>
+
+<ul class="flow-refs">
+  <li>
+    Code:
+    <a href={repoFileUrl(screen.folder)} rel="noreferrer" target="_blank"
+      ><code>{screen.folder}</code></a
+    >
+  </li>
+  <li>
+    Doc:
+    <a href={repoFileUrl(screen.docPath)} rel="noreferrer" target="_blank"
+      ><code>{screen.docPath}</code></a
+    >
+  </li>
+  <li>
+    Node IDs:
+    {screen.nodeIds.map((id, index) => (
+      <span>
+        {index ? ", " : ""}
+        <code>{id}</code>
+      </span>
+    ))}
+  </li>
+</ul>

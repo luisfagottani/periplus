@@ -1,0 +1,81 @@
+{
+  "name": "periplus",
+  "version": "0.0.0",
+  "description": "Living documentation for product journeys: typed docs colocated with screens (*.periplus.ts), CI validation, generated types and an Astro + Starlight site with an interactive map of every flow.",
+  "keywords": [
+    "documentation",
+    "living-docs",
+    "user-flows",
+    "journeys",
+    "react-native",
+    "astro",
+    "starlight",
+    "cli",
+    "ai-context"
+  ],
+  "homepage": "https://github.com/luisfagottani/periplus#readme",
+  "bugs": {
+    "url": "https://github.com/luisfagottani/periplus/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luisfagottani/periplus.git"
+  },
+  "license": "MIT",
+  "author": "Luis Felipe Agottani",
+  "type": "module",
+  "bin": {
+    "periplus": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "skills"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "changeset": "changeset",
+    "cli": "tsx src/cli.ts",
+    "dev": "tsdown --watch",
+    "format": "ultracite fix",
+    "lint": "ultracite check && publint",
+    "release": "pnpm build && changeset publish",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "version-packages": "changeset version"
+  },
+  "dependencies": {
+    "giget": "^2.0.0",
+    "micromatch": "^4.0.8",
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@types/micromatch": "^4.0.10",
+    "@types/node": "^20.19.43",
+    "publint": "^0.3.25",
+    "tsdown": "^0.23.0",
+    "tsx": "^4.23.15",
+    "ultracite": "^7.12.2",
+    "vitest": "^5.0.3"
+  },
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

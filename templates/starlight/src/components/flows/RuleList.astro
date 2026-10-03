@@ -1,0 +1,53 @@
+---
+import type { ManifestNode } from "../../lib/catalog";
+import { inlineCode, repoFileUrl } from "../../lib/catalog";
+
+interface Props {
+  rules: ManifestNode["rules"];
+}
+
+const { rules } = Astro.props;
+---
+
+<div class="flow-rules">
+  {rules.map((rule) => (
+    <article class="flow-rule" id={`rule-${rule.id}`}>
+      <h4>{rule.id}</h4>
+      <p set:html={inlineCode(rule.summary)} />
+      {rule.when ? (
+        <p>
+          <strong>When</strong> <span set:html={inlineCode(rule.when)} />
+        </p>
+      ) : null}
+      {rule.then ? (
+        <p>
+          <strong>Then</strong> <span set:html={inlineCode(rule.then)} />
+        </p>
+      ) : null}
+      {rule.where.length || rule.verify.length ? (
+        <ul class="flow-refs">
+          {rule.where.map((ref) => (
+            <li>
+              <a href={repoFileUrl(ref.file)} rel="noreferrer" target="_blank">
+                {ref.symbol ? `${ref.symbol} · ` : ""}
+                {ref.file}
+              </a>
+            </li>
+          ))}
+          {rule.verify.map((check) => (
+            <li>
+              Test:{" "}
+              <a
+                href={repoFileUrl(check.test)}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {check.test}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </article>
+  ))}
+</div>

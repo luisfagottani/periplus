@@ -1,0 +1,67 @@
+---
+import {
+  domainLabel,
+  flowHref,
+  loadCatalog,
+  overviewPayload,
+  repoUrl,
+  STATUS_LABELS,
+} from "../../lib/catalog";
+import FlowGraph from "./FlowGraph";
+
+const catalog = loadCatalog();
+const graphJson = JSON.stringify(overviewPayload());
+---
+
+<p class="flow-map-hint">
+  Each node is a flow; arrows show where one flow leads to another. Orange flows
+  are not documented yet. Double-click opens the flow.
+</p>
+
+<FlowGraph graphJson={graphJson} repoUrl={repoUrl()} client:only="react" />
+
+<h2>Documented flows ({catalog.flows.length})</h2>
+
+<table class="flow-screen-table">
+  <thead>
+    <tr>
+      <th>Flow</th>
+      <th>Domain</th>
+      <th>Status</th>
+      <th>Screens</th>
+    </tr>
+  </thead>
+  <tbody>
+    {catalog.flows.map((flow) => (
+      <tr>
+        <td>
+          <a href={flowHref(flow)}>{flow.title}</a>
+          <div class="flow-screen-table__ref">
+            <code>{flow.flowId}</code>
+          </div>
+        </td>
+        <td>{domainLabel(flow.domain)}</td>
+        <td>
+          <span class={`flow-badge flow-badge--${flow.status}`}>
+            {STATUS_LABELS[flow.status]}
+          </span>
+        </td>
+        <td>{flow.screens.length}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{catalog.externalFlows.length ? (
+  <>
+    <h2>Referenced flows without docs ({catalog.externalFlows.length})</h2>
+    <ul>
+      {catalog.externalFlows.map((flow) => (
+        <li>
+          <strong>{flow.title}</strong> <code>{flow.flowId}</code>
+          {flow.note ? <span class="muted"> — {flow.note}</span> : null}
+        </li>
+      ))}
+    </ul>
+  </>
+) : null}

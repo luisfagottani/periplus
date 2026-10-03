@@ -1,0 +1,95 @@
+name: release
+
+on:
+  push:
+    branches: [main, next]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: version
+    runs-on: ubuntu-latest
+    outputs:
+      should-publish: ${{ steps.unpublished.outputs.should-publish }}
+    steps:
+      # A GitHub App token (instead of GITHUB_TOKEN) so the "Version Packages" PR triggers CI.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Open or update the version PR
+        id: changesets
+        uses: changesets/action@v2
+        with:
+          version-script: pnpm version-packages
+          commit-message: ${{ github.ref_name == 'next' && 'Version Packages (next)' || 'Version Packages' }}
+          pr-title: ${{ github.ref_name == 'next' && 'Version Packages (next)' || 'Version Packages' }}
+          github-token: ${{ steps.app-token.outputs.token }}
+
+      - name: Check whether the current version is already on npm
+        id: unpublished
+        if: steps.changesets.outputs.has-changesets == 'false'
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "periplus@$version" version >/dev/null 2>&1; then
+            echo "periplus@$version is already published."
+            echo "should-publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "periplus@$version is not published yet."
+            echo "should-publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    name: publish
+    needs: version
+    if: needs.version.outputs.should-publish == 'true'
+    runs-on: ubuntu-latest
+    # Requires a manual approval from the repository owner.
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+
+      # Publishes with the dist-tag from pre mode on `next`, `latest` on `main`,
+      # then pushes the git tag and creates the GitHub release.
+      - uses: changesets/action@v2
+        with:
+          publish-script: pnpm release
+          github-token: ${{ steps.app-token.outputs.token }}
+        env:
+          # Remove once Trusted Publishing (OIDC) is configured on npmjs.com.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
