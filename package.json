@@ -1,6 +1,6 @@
 {
   "name": "periplus",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Living documentation for product journeys: typed docs colocated with screens (*.periplus.ts), CI validation, generated types and an Astro + Starlight site with an interactive map of every flow.",
   "keywords": [
     "documentation",
