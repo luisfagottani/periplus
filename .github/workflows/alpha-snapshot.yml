@@ -44,7 +44,6 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
 
       - name: Require at least one changeset
@@ -56,6 +55,14 @@ jobs:
 
       - run: pnpm changeset version --snapshot alpha
       - run: pnpm build
+      # setup-node `registry-url` writes _authToken=${NODE_AUTH_TOKEN} and blocks OIDC (setup-node#1551).
+      - name: Prepare npm for Trusted Publishing
+        run: |
+          unset NODE_AUTH_TOKEN || true
+          for npmrc in "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}" "${RUNNER_TEMP}/.npmrc" .npmrc; do
+            [[ -f "$npmrc" ]] && sed -i '/_authToken/d' "$npmrc" || true
+          done
+          printf 'registry=https://registry.npmjs.org/\nprovenance=true\n' > .npmrc
       - run: pnpm changeset publish --tag alpha --no-git-tag
         env:
           NPM_CONFIG_PROVENANCE: "true"
