@@ -82,8 +82,15 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
+
+      - name: Prepare npm for Trusted Publishing
+        run: |
+          unset NODE_AUTH_TOKEN || true
+          for npmrc in "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}" "${RUNNER_TEMP}/.npmrc" .npmrc; do
+            [[ -f "$npmrc" ]] && sed -i '/_authToken/d' "$npmrc" || true
+          done
+          printf 'registry=https://registry.npmjs.org/\nprovenance=true\n' > .npmrc
 
       # Publishes with the dist-tag from pre mode on `next`, `latest` on `main`,
       # then pushes the git tag and creates the GitHub release.
