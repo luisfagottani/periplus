@@ -32,6 +32,9 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
+    env:
+      # @changesets/changelog-github (during `changeset version --snapshot`).
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
         with:
