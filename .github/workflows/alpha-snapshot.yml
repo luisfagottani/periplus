@@ -32,6 +32,9 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
+    env:
+      # @changesets/changelog-github (during `changeset version --snapshot`).
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -55,8 +58,6 @@ jobs:
       - run: pnpm build
       - run: pnpm changeset publish --tag alpha --no-git-tag
         env:
-          # Remove once Trusted Publishing (OIDC) is configured on npmjs.com.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
 
       - name: Report the published version
