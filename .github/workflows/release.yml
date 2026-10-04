@@ -92,6 +92,5 @@ jobs:
           publish-script: pnpm release
           github-token: ${{ steps.app-token.outputs.token }}
         env:
-          # Remove once Trusted Publishing (OIDC) is configured on npmjs.com.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # npm Trusted Publishing (OIDC): setup-node registry-url + id-token: write; no NPM_TOKEN.
           NPM_CONFIG_PROVENANCE: "true"

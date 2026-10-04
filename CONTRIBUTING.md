@@ -108,8 +108,8 @@ Then open a PR from `next` into `main`. Once merged, the regular "Version Packag
 `scripts/setup-repo.sh` applies the repository settings, rulesets (`.github/rulesets/`), labels and the `npm-publish` environment through `gh`. The rest is manual:
 
 1. Create a GitHub App (e.g. `periplus-release-bot`) with **Contents** and **Pull requests** read/write permissions, install it on this repository, then save its Client ID as the `RELEASE_APP_CLIENT_ID` variable and its private key as the `RELEASE_APP_PRIVATE_KEY` secret. Re-run the setup script with `RELEASE_APP_ID=<app id>` so the App can push release tags.
-2. Add an npm granular access token (publish rights for `periplus`) as the `NPM_TOKEN` secret of the `npm-publish` environment.
-3. After the first release, configure Trusted Publishing on npmjs.com (package `periplus` → repository `luisfagottani/periplus`, workflows `release.yml` and `alpha-snapshot.yml`, environment `npm-publish`) and delete `NPM_TOKEN`.
+2. Configure **Trusted Publishing** on npmjs.com (package `periplus` → repository `luisfagottani/periplus`, workflows `release.yml` and `alpha-snapshot.yml`, environment `npm-publish`). Release and alpha workflows authenticate with OIDC only (`registry-url` + `id-token: write`); do not store an `NPM_TOKEN` secret.
+3. **First publish only:** if the package does not exist on npm yet, use a granular token with bypass 2FA (or classic Automation) in `NPM_TOKEN` once, then remove it after Trusted Publishing is active.
 
 ## License
 
