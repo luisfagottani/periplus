@@ -6,13 +6,25 @@ import { type LoadedScreen, loadProject, resolveFlow } from "../discover.ts";
 import { fingerprintOf } from "../fingerprint.ts";
 import { setTopLevelStrings } from "../tsdoc.ts";
 
+/** Which docs {@link runStamp} marks. The first non-empty option wins. */
 export interface StampOptions {
+  /** Doc files or screen folders, relative to `ctx.cwd`. */
   files: string[];
+  /** Every doc of this flow (slug or `flowId`). */
   flow?: string;
+  /** Every doc whose code changed since its last review. */
   stale?: boolean;
 }
 
-/** Marks the doc as reviewed against the current code (`codeFingerprint` + `lastReviewed`). */
+/**
+ * Marks docs as reviewed against the current code (`codeFingerprint` + `lastReviewed`),
+ * preserving the rest of the file.
+ *
+ * @param ctx - Project context.
+ * @param options - Which docs to stamp.
+ * @returns The stamped files, relative to the repository root.
+ * @throws When nothing was selected, a file is not a valid doc, or the flow is unknown.
+ */
 export function runStamp(ctx: Ctx, options: StampOptions): string[] {
   const project = loadProject(ctx);
   let targets: LoadedScreen[];

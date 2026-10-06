@@ -32,6 +32,13 @@ export function walkFiles(
   return out.sort();
 }
 
+/**
+ * Writes `content` only when it differs from what is on disk, creating parent folders.
+ *
+ * @param absolute - Destination path.
+ * @param content - Full file content.
+ * @returns `true` when the file was written.
+ */
 export function writeIfChanged(absolute: string, content: string): boolean {
   if (
     fs.existsSync(absolute) &&
@@ -44,6 +51,13 @@ export function writeIfChanged(absolute: string, content: string): boolean {
   return true;
 }
 
+/**
+ * Converts camelCase, PascalCase, snake_case or spaced text to kebab-case.
+ *
+ * @example
+ * kebab("CheckoutCart"); // "checkout-cart"
+ * kebab("PIXPayment");   // "pix-payment"
+ */
 export function kebab(value: string): string {
   return value
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
@@ -52,6 +66,12 @@ export function kebab(value: string): string {
     .toLowerCase();
 }
 
+/**
+ * Converts any separated text to PascalCase.
+ *
+ * @example
+ * pascal("checkout_cart"); // "CheckoutCart"
+ */
 export function pascal(value: string): string {
   return value
     .split(NON_ALPHANUMERIC)

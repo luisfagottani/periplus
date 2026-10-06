@@ -14,7 +14,7 @@ A *periplus* was the logbook of ancient navigators: the list of ports along a co
 
 ## Requirements
 
-- Node.js 20 or newer for the CLI; Node.js 22.12 or newer to run the site (Astro 7 + Starlight + React 19)
+- Node.js 20.12 or newer for the CLI; Node.js 22.12 or newer to run the site (Astro 7 + Starlight + React 19)
 - A TypeScript project (React Native, React, or anything with screen folders)
 
 ## Installation
@@ -87,6 +87,24 @@ periplus check [--fail-on error|stale|warning] [--format text|markdown|json] [--
 periplus build [--check] [--no-hub]
 periplus dev
 ```
+
+Run `periplus --help` or `periplus <command> --help` for every flag.
+
+### Interactive and non-interactive use
+
+In a terminal, the CLI fills in what you leave out: `periplus init` without a folder opens a short wizard (folder, template, overwrite confirmation), `new` asks for a missing slug or module root, `node` lets you pick the flow from a list, and `stamp` without arguments asks what to mark as reviewed. Long steps (`init`, `build`, `check`) show a spinner; `dev` prints one line per rebuild instead.
+
+Prompts and spinners only appear when both stdin and stdout are terminals. They are turned off by:
+
+| Switch | Effect |
+| --- | --- |
+| `--yes` / `-y` | Never prompt; missing required arguments fail with a usage error |
+| `CI=true` | Same as `--yes` (set automatically by GitHub Actions and most CI providers) |
+| Piping or redirecting | No prompts, no spinners, no colors |
+
+Colors follow the usual conventions: `NO_COLOR=1` disables them, `FORCE_COLOR=1` forces them (e.g. when piping to a pager), and `TERM=dumb` disables them. CI logs are colored by default. `check --format json|markdown` and `check --output <file>` never contain color codes, so they are safe to parse or post as PR comments.
+
+Pressing Ctrl+C on a prompt exits with code 130.
 
 `<flow>` accepts the `flowId` (`checkout_cart`) or the folder slug (`checkout`). Without `--path`, `node` uses the current directory. Without `--domain`, `new` uses the configured domain that appears in the `--module-root` path (or the first configured one); when the config has no `domains`, `--domain` is required.
 

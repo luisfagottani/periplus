@@ -5,6 +5,14 @@ import { analyze } from "../analyze.ts";
 import { type Ctx, toRepoPath } from "../context.ts";
 import { extractSuggestions, renderSuggestions } from "../suggest.ts";
 
+/**
+ * Extracts candidates (APIs, navigations, error handling) with `file:line` evidence from a screen
+ * folder and writes them to `<Folder>.periplus.suggest.md` for a human to review.
+ *
+ * @param ctx - Project context.
+ * @param target - Screen folder or a file inside it, relative to `ctx.cwd` (default: `ctx.cwd`).
+ * @returns The suggestions file, relative to the repository root.
+ */
 export function runSuggest(ctx: Ctx, target: string | undefined): string {
   const folderAbs = path.resolve(ctx.cwd, target ?? ".");
   const resolvedFolder = fs.statSync(folderAbs).isDirectory()

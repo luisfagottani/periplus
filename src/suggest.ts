@@ -5,10 +5,10 @@ import micromatch from "micromatch";
 
 import { type Ctx, fromRepoPath, toRepoPath } from "./context.ts";
 import { codeFilesFor } from "./fingerprint.ts";
-import { walkFiles } from "./fsutil.ts";
 import type { FlowManifest } from "./manifest.ts";
 import { type ApiEffect, screenDocSchema } from "./schema.ts";
 import { toTsLiteral } from "./tsdoc.ts";
+import { walkFiles } from "./utils/fsutil.ts";
 
 interface Evidence {
   file: string;

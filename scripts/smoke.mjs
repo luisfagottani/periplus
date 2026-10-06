@@ -19,7 +19,9 @@ const cli = path.resolve(
 const project = fs.mkdtempSync(path.join(os.tmpdir(), "periplus-smoke-"));
 
 // pnpm forwards the caller directory as INIT_CWD; it would point the CLI at this repository.
-const { INIT_CWD: _callerDir, ...env } = process.env;
+// stdio is inherited, so without CI=true a local terminal would make the CLI prompt and hang.
+const { INIT_CWD: _callerDir, ...callerEnv } = process.env;
+const env = { ...callerEnv, CI: "true" };
 
 function write(relative, content) {
   const file = path.join(project, relative);
