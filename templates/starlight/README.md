@@ -2,6 +2,10 @@
 
 Your project's journey site (**Astro Starlight** + **React Flow**), installed by `periplus init`. It has no source of its own: it renders what `periplus build` generates from `flows/<slug>/index.mdx` and from the `*.periplus.ts` files (+ `*.periplus.mdx` bodies) colocated with your screens.
 
+## Requirements
+
+Node.js 22.12 or newer (required by Astro). The `periplus` CLI itself still runs on Node 20+.
+
 ## Commands
 
 ```bash

@@ -27,8 +27,9 @@ pnpm install
 | `pnpm format` | Ultracite fix (formatting and safe lint fixes) |
 | `pnpm build` | Bundles `dist/cli.mjs` with tsdown |
 | `pnpm smoke` | Runs the built CLI end to end in an empty project |
+| `node scripts/verify-site.mjs [--keep]` | Scaffolds a project with the built CLI, then runs `astro check` and `astro build` on the site |
 
-The published package targets Node 20.12+ (`@clack/prompts` needs `util.styleText`), while development and CI run on Node 24. Avoid runtime APIs newer than Node 20.12 in `src/`; CI runs the smoke test on Node 20.
+The published CLI targets Node 20.12+ (`@clack/prompts` needs `util.styleText`), while development and CI run on Node 24. Avoid runtime APIs newer than Node 20.12 in `src/`; CI runs the smoke test on Node 20. The site template needs Node 22.12+ (Astro); the `site` CI job runs `verify-site.mjs` on Node 22.
 
 `pnpm smoke` sets `CI=true`, so the CLI never waits for input there. To try the prompts locally, run `pnpm cli init` (or `new`, `node`, `stamp` without arguments) in a real terminal; add `--yes` or `CI=true` to check the non-interactive path, and `NO_COLOR=1` / `FORCE_COLOR=1` to check colors.
 
@@ -43,7 +44,7 @@ The repository ships VS Code/Cursor settings that format and fix on save with Bi
 - `src/domain/` — rules shared by use-cases (for now the check report: failure thresholds and text/Markdown rendering). Code still at the top of `src/` (discovery, graph, codegen) moves here gradually.
 - `src/utils/` — filesystem and package helpers with no periplus knowledge.
 - Exported functions and types carry English JSDoc; keep it when you add or change one.
-- `templates/starlight/` — the Astro + Starlight site copied by `periplus init`. It is linted here but type-checked in a real project.
+- `templates/starlight/` — the Astro + Starlight site copied by `periplus init`. It is linted here and type-checked/built in a real project by `scripts/verify-site.mjs`. Its `package-lock.json` pins the site dependencies for CI; it is excluded from the npm tarball and never copied by `init`.
 - `skills/periplus-docs/` — the agent skill installed by `periplus skill`.
 - `test/` — Vitest suites mirroring `src/` (`test/cli`, `test/use-cases`, `test/domain`, `test/utils`). `test/helpers/` has a temporary demo project, in-memory streams, a fake CLI runtime and a scripted prompter for testing interactive flows.
 

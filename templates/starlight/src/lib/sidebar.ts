@@ -5,15 +5,15 @@ interface SidebarLink {
   link: string;
   badge?: { text: string; variant: "caution" | "note" };
 }
+interface SidebarAutogenerate {
+  autogenerate: { directory: string };
+}
 interface SidebarGroup {
   label: string;
   collapsed?: boolean;
-  items: Array<SidebarLink | SidebarGroup>;
+  items: Array<SidebarLink | SidebarGroup | SidebarAutogenerate>;
 }
-type SidebarItem =
-  | SidebarLink
-  | SidebarGroup
-  | { label: string; autogenerate: { directory: string } };
+type SidebarItem = SidebarLink | SidebarGroup;
 
 function flowGroup(flow: CatalogFlow): SidebarGroup {
   return {
@@ -50,7 +50,7 @@ export function buildStarlightSidebar(): SidebarItem[] {
     .filter((group) => group.items.length > 0);
 
   return [
-    { label: "Guide", autogenerate: { directory: "guide" } },
+    { label: "Guide", items: [{ autogenerate: { directory: "guide" } }] },
     { label: "Overview map", link: "/overview/" },
     ...domainGroups,
   ];

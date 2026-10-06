@@ -21,7 +21,19 @@ updates:
     directory: /templates/starlight
     schedule:
       interval: weekly
+    open-pull-requests-limit: 2
     groups:
+      # Astro, its integrations and React move together (peer ranges), majors included;
+      # the `site` CI job builds the hub before merge.
+      site-stack:
+        patterns:
+          - astro
+          - "@astrojs/*"
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+          - "@xyflow/react"
       site:
         update-types: [minor, patch]
     commit-message:

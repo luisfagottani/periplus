@@ -1,10 +1,12 @@
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { memo } from "react";
 
 import type { FlowNodeData } from "../../lib/graphToFlow";
 
-function FlowNodeComponent({ data, selected }: NodeProps) {
-  const nodeData = data as FlowNodeData;
+function FlowNodeComponent({
+  data: nodeData,
+  selected,
+}: NodeProps<Node<FlowNodeData>>) {
   const vertical = nodeData.direction === "TB";
   const isStart = nodeData.role === "start";
   const isEnd = nodeData.role === "end";

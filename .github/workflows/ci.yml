@@ -63,6 +63,22 @@ jobs:
           node-version: 20
       - run: node scripts/smoke.mjs
 
+  site:
+    # Builds the Starlight hub that `init` scaffolds, on the oldest Node major it
+    # supports (Astro needs >=22.12).
+    name: site (node 22)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: node scripts/verify-site.mjs
+
   changeset:
     name: changeset
     if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main' && github.head_ref != 'changeset-release/next'

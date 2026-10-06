@@ -10,7 +10,9 @@ import {
 import { isExternalUrl } from "./links";
 import { NODE_CATEGORY_LABELS, nodeCategory } from "./nodeCategory";
 
+/** React Flow requires node/edge data to be assignable to `Record<string, unknown>`. */
 export interface FlowNodeData {
+  [key: string]: unknown;
   label: string;
   ref?: string;
   subtitle?: string;
@@ -28,6 +30,7 @@ export interface FlowNodeData {
 }
 
 export interface FlowEdgeData {
+  [key: string]: unknown;
   label: string;
 }
 
