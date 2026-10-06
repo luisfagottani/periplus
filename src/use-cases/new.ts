@@ -11,10 +11,15 @@ import {
 import { stringifyMdx } from "../frontmatter.ts";
 import { flowIndexSchema, formatZodIssues } from "../schema.ts";
 
+/** Options of {@link runNew}. */
 export interface NewOptions {
+  /** snake_case `flowId` (default: the slug with `-` replaced by `_`). */
   id?: string;
+  /** Human title (default: the slug). */
   title?: string;
+  /** Domain id from the config `domains`. */
   domain?: string;
+  /** Repo-relative folder that holds the flow's screens. */
   moduleRoot?: string;
 }
 
@@ -31,9 +36,34 @@ TODO: summary of the main path and the most important branches.
 Screens, rules and links live in the \`*.periplus.ts\` files colocated with each screen folder.
 `;
 
+/**
+ * Validates a flow slug (the folder name under `flowsDir`).
+ *
+ * @param slug - Candidate slug.
+ * @returns An error message, or `undefined` when the slug is valid kebab-case.
+ * @example
+ * validateFlowSlug("checkout"); // undefined
+ * validateFlowSlug("Checkout"); // 'invalid slug "Checkout"; use kebab-case (e.g. checkout)'
+ */
+export function validateFlowSlug(slug: string): string | undefined {
+  return KEBAB_SLUG.test(slug)
+    ? undefined
+    : `invalid slug "${slug}"; use kebab-case (e.g. checkout)`;
+}
+
+/**
+ * Creates a flow root at `flows/<slug>/index.mdx` with TODO placeholders.
+ *
+ * @param ctx - Project context.
+ * @param slug - kebab-case folder name; the default `flowId` is its snake_case form.
+ * @param options - `moduleRoot` is required; `domain` falls back to a configured domain found in that path.
+ * @returns The created file, relative to the repository root.
+ * @throws When the slug is invalid, the flow exists, the module root is missing or no domain can be chosen.
+ */
 export function runNew(ctx: Ctx, slug: string, options: NewOptions): string {
-  if (!KEBAB_SLUG.test(slug)) {
-    throw new Error(`invalid slug "${slug}"; use kebab-case (e.g. checkout)`);
+  const invalid = validateFlowSlug(slug);
+  if (invalid) {
+    throw new Error(invalid);
   }
 
   const file = path.join(flowsDirAbs(ctx), slug, "index.mdx");

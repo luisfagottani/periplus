@@ -5,15 +5,15 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, it } from "vitest";
 
 import { analyze } from "../src/analyze.ts";
-import { runBuild } from "../src/commands/build.ts";
-import { runCheck } from "../src/commands/check.ts";
-import { runInit } from "../src/commands/init.ts";
-import { runNode } from "../src/commands/node.ts";
-import { EMBEDDED_SKILL, runSkill } from "../src/commands/skill.ts";
-import { runStamp } from "../src/commands/stamp.ts";
 import { type Ctx, loadContext } from "../src/context.ts";
 import type { FlowManifest } from "../src/manifest.ts";
 import { normalizeLinkRef } from "../src/schema.ts";
+import { runBuild } from "../src/use-cases/build.ts";
+import { runCheck } from "../src/use-cases/check.ts";
+import { runInit } from "../src/use-cases/init.ts";
+import { runNode } from "../src/use-cases/node.ts";
+import { EMBEDDED_SKILL, runSkill } from "../src/use-cases/skill.ts";
+import { runStamp } from "../src/use-cases/stamp.ts";
 
 let root: string;
 

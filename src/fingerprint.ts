@@ -6,8 +6,8 @@ import micromatch from "micromatch";
 
 import { type Ctx, fromRepoPath, toRepoPath } from "./context.ts";
 import { type LoadedScreen, SCREEN_DOC_SUFFIX } from "./discover.ts";
-import { walkFiles } from "./fsutil.ts";
 import { BODY_SUFFIX } from "./tsdoc.ts";
+import { walkFiles } from "./utils/fsutil.ts";
 
 /**
  * Code files that "belong" to a doc: the screen folder (recursive, without tests/styles)

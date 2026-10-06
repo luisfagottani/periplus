@@ -47,8 +47,10 @@
     "version-packages": "changeset version"
   },
   "dependencies": {
+    "@clack/prompts": "^1.8.1",
     "giget": "^2.0.0",
     "micromatch": "^4.0.8",
+    "picocolors": "^1.1.1",
     "typescript": "^5.9.3",
     "yaml": "^2.9.1",
     "zod": "^4.6.5"
@@ -67,7 +69,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.12"
   },
   "publishConfig": {
     "access": "public",

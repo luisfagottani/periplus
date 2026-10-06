@@ -1,4 +1,4 @@
-import { pascal } from "../fsutil.ts";
+import { pascal } from "../utils/fsutil.ts";
 import type { FlowCatalog, FlowManifest } from "../manifest.ts";
 import { API_EFFECTS, OUTCOMES, SCREEN_TYPES } from "../schema.ts";
 

@@ -3,7 +3,6 @@ import path from "node:path";
 
 import { type Ctx, flowsDirAbs, fromRepoPath, toRepoPath } from "./context.ts";
 import { parseMdx } from "./frontmatter.ts";
-import { walkFiles } from "./fsutil.ts";
 import type { Issue } from "./issues.ts";
 import {
   type FlowIndex,
@@ -13,6 +12,7 @@ import {
   screenDocSchema,
 } from "./schema.ts";
 import { BODY_SUFFIX, evaluateTsDoc } from "./tsdoc.ts";
+import { walkFiles } from "./utils/fsutil.ts";
 
 export const SCREEN_DOC_SUFFIX = ".periplus.ts";
 const TRAILING_SLASHES = /\/+$/;

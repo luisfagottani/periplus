@@ -1,52 +1,28 @@
-import { type Issue, STALE_CODES } from "./issues.ts";
+import { type Issue, STALE_CODES } from "../../issues.ts";
+import { sortIssues } from "./fail.ts";
 
-export type FailOn = "error" | "stale" | "warning";
-
+/** Hidden marker that lets CI find and update its previous PR comment. */
 export const PR_COMMENT_MARKER = "<!-- periplus-check -->";
 
-const LEVEL_RANK: Record<Issue["level"], number> = { error: 0, warning: 1 };
-
-export function shouldFail(issues: Issue[], failOn: FailOn): boolean {
-  return issues.some((issue) => {
-    if (issue.level === "error") {
-      return true;
-    }
-    if (failOn === "warning") {
-      return true;
-    }
-    return failOn === "stale" && STALE_CODES.has(issue.code);
-  });
+/** Inputs besides the issues that shape the Markdown report. */
+export interface MarkdownReportOptions {
+  /** Whether the check failed for the chosen `--fail-on` threshold. */
+  failed: boolean;
+  /** Generated files that differ from a fresh build. */
+  generatedStale?: string[];
 }
 
-function sortIssues(issues: Issue[]): Issue[] {
-  return [...issues].sort(
-    (a, b) =>
-      LEVEL_RANK[a.level] - LEVEL_RANK[b.level] ||
-      (a.file ?? "").localeCompare(b.file ?? "") ||
-      a.code.localeCompare(b.code)
-  );
-}
-
-export function renderText(issues: Issue[]): string {
-  if (!issues.length) {
-    return "✓ periplus: no issues found.";
-  }
-
-  const lines = sortIssues(issues).map((issue) => {
-    const icon = issue.level === "error" ? "✗" : "!";
-    const where = [issue.file, issue.nodeId].filter(Boolean).join(" · ");
-    return `${icon} [${issue.code}] ${where ? `${where}: ` : ""}${issue.message}`;
-  });
-
-  const errors = issues.filter((i) => i.level === "error").length;
-  lines.push("");
-  lines.push(`${errors} error(s), ${issues.length - errors} warning(s).`);
-  return lines.join("\n");
-}
-
+/**
+ * Renders the check result as a GitHub-flavored Markdown PR comment.
+ * Never contains ANSI codes, so it is safe to post or write to a file.
+ *
+ * @param issues - Issues found by the analysis.
+ * @param options - Failure status and stale generated files.
+ * @returns Markdown ending with a newline, starting with {@link PR_COMMENT_MARKER}.
+ */
 export function renderMarkdown(
   issues: Issue[],
-  options: { failed: boolean; generatedStale?: string[] }
+  options: MarkdownReportOptions
 ): string {
   const errors = issues.filter((i) => i.level === "error");
   const stale = issues.filter(

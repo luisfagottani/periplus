@@ -3,10 +3,12 @@ import os from "node:os";
 import path from "node:path";
 
 import { CONFIG_FILE, findRoot } from "../context.ts";
-import { packageRoot } from "../paths.ts";
+import { packageRoot } from "../utils/paths.ts";
 
+/** Where `periplus init` installs the site when no folder is given. */
 export const DEFAULT_SITE_DIR = "docs/periplus";
 
+/** The Starlight template shipped inside the npm package. */
 export const EMBEDDED_TEMPLATE = path.join(
   packageRoot(),
   "templates/starlight"
@@ -17,20 +19,29 @@ const RENAMES: Record<string, string> = { gitignore: ".gitignore" };
 const SKIP = new Set(["node_modules", "dist", ".astro", "package-lock.json"]);
 const GENERATED_DIR = path.join("src", "content", "docs", "flows");
 
+/** Options of {@link runInit}. */
 export interface InitOptions {
+  /** Invocation directory; the project root is searched upwards from it. */
   cwd: string;
+  /** Site folder relative to `cwd` (default {@link DEFAULT_SITE_DIR}). */
   dir?: string;
+  /** Overwrite files that already exist in the site folder. */
   force?: boolean;
   /** giget source (e.g. `gh:org/repo/templates/starlight`); defaults to the bundled template. */
   template?: string;
 }
 
+/** Outcome of {@link runInit}. */
 export interface InitResult {
+  /** Absolute project root. */
   root: string;
   /** Site folder relative to the root (written as `hubDir`). */
   hubDir: string;
+  /** Template files copied, relative to the site folder. */
   written: string[];
+  /** Files kept because they already existed and `force` was not set. */
   skipped: string[];
+  /** What happened to `periplus.config.json`. */
   config: "created" | "updated" | "unchanged";
 }
 
@@ -122,6 +133,13 @@ async function resolveTemplate(
   };
 }
 
+/**
+ * Installs the docs site (Astro + Starlight) and points `periplus.config.json` at it.
+ *
+ * @param options - Location, overwrite policy and template source.
+ * @returns Files written/skipped and the config change.
+ * @throws When the site folder would be outside the project.
+ */
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const root = findRoot(options.cwd) ?? path.resolve(options.cwd);
   const target = path.resolve(options.cwd, options.dir ?? DEFAULT_SITE_DIR);

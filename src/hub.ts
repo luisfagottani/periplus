@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { type Ctx, fromRepoPath, toRepoPath } from "./context.ts";
-import { walkFiles, writeIfChanged } from "./fsutil.ts";
 import type { FlowManifest } from "./manifest.ts";
+import { walkFiles, writeIfChanged } from "./utils/fsutil.ts";
 
 export function hubPagesDir(ctx: Ctx): string | undefined {
   if (!ctx.config.hubDir) {

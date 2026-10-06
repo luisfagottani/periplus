@@ -1,6 +1,5 @@
 import type { Ctx } from "./context.ts";
 import type { LoadedIndex, LoadedScreen } from "./discover.ts";
-import { kebab } from "./fsutil.ts";
 import type { Issue } from "./issues.ts";
 import type {
   FlowManifest,
@@ -9,6 +8,7 @@ import type {
   ManifestScreen,
 } from "./manifest.ts";
 import { normalizeLinkRef, type ScreenType } from "./schema.ts";
+import { kebab } from "./utils/fsutil.ts";
 
 export const ENTRY_NODE_ID = "flow:entry";
 

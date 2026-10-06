@@ -31,3 +31,11 @@ export function packageRoot(): string {
   cached = dir;
   return dir;
 }
+
+/** Version of the installed `periplus` package (from its `package.json`). */
+export function packageVersion(): string {
+  const { version } = JSON.parse(
+    fs.readFileSync(path.join(packageRoot(), "package.json"), "utf8")
+  ) as { version: string };
+  return version;
+}

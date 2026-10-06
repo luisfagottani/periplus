@@ -22,10 +22,15 @@ import {
   renderTsDoc,
 } from "../tsdoc.ts";
 
+/** Options of {@link runNode}. */
 export interface NodeOptions {
+  /** Screen folder relative to `ctx.cwd` (default: `ctx.cwd`). */
   path?: string;
+  /** Adds this branch to an existing doc instead of creating one. */
   branch?: string;
+  /** Screen type (`loading`, `form`…). */
   type?: string;
+  /** Branch label (default: the humanized folder name). */
   label?: string;
 }
 
@@ -64,6 +69,15 @@ function emptyBranch(branchId: string, label: string, type?: ScreenType) {
   };
 }
 
+/**
+ * Creates `<Folder>.periplus.ts` (+ `.periplus.mdx` body) for a screen, or adds a branch to it.
+ *
+ * @param ctx - Project context.
+ * @param flow - Flow slug or `flowId`.
+ * @param options - Screen folder, branch, type and label.
+ * @returns The doc file (repo-relative) and whether it was created (`false` = branch added).
+ * @throws When the flow is unknown, or the doc exists and no `branch` was given.
+ */
 export function runNode(
   ctx: Ctx,
   flow: string,
