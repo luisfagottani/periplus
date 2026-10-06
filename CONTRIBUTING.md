@@ -27,15 +27,16 @@ pnpm install
 | `pnpm format` | Ultracite fix (formatting and safe lint fixes) |
 | `pnpm build` | Bundles `dist/cli.mjs` with tsdown |
 | `pnpm smoke` | Runs the built CLI end to end in an empty project |
+| `node scripts/verify-site.mjs [--keep]` | Scaffolds a project with the built CLI, then runs `astro check` and `astro build` on the site |
 
-The published package targets Node 20+, while development and CI run on Node 24. Avoid runtime APIs newer than Node 20 in `src/`; CI runs the smoke test on Node 20.
+The published CLI targets Node 20+, while development and CI run on Node 24. Avoid runtime APIs newer than Node 20 in `src/`; CI runs the smoke test on Node 20. The site template needs Node 22.12+ (Astro); the `site` CI job runs `verify-site.mjs` on Node 22.
 
 The repository ships VS Code/Cursor settings that format and fix on save with Biome. Install the recommended extensions when prompted.
 
 ## Project layout
 
 - `src/` — the CLI (commands, discovery, graph, codegen).
-- `templates/starlight/` — the Astro + Starlight site copied by `periplus init`. It is linted here but type-checked in a real project.
+- `templates/starlight/` — the Astro + Starlight site copied by `periplus init`. It is linted here and type-checked/built in a real project by `scripts/verify-site.mjs`. Its `package-lock.json` pins the site dependencies for CI; it is excluded from the npm tarball and never copied by `init`.
 - `skills/periplus-docs/` — the agent skill installed by `periplus skill`.
 - `test/` — Vitest suites that build temporary projects.
 
