@@ -51,7 +51,7 @@
     "version-packages": "changeset version"
   },
   "dependencies": {
-    "giget": "^2.0.0",
+    "giget": "^3.3.1",
     "micromatch": "^4.0.8",
     "typescript": "^5.9.3",
     "yaml": "^2.9.1",
