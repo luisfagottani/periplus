@@ -14,7 +14,7 @@ A *periplus* was the logbook of ancient navigators: the list of ports along a co
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 20 or newer for the CLI; Node.js 22.12 or newer to run the site (Astro 7 + Starlight + React 19)
 - A TypeScript project (React Native, React, or anything with screen folders)
 
 ## Installation

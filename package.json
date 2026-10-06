@@ -30,6 +30,10 @@
   "files": [
     "dist",
     "templates",
+    "!templates/starlight/package-lock.json",
+    "!templates/starlight/node_modules",
+    "!templates/starlight/.astro",
+    "!templates/starlight/dist",
     "skills"
   ],
   "scripts": {
